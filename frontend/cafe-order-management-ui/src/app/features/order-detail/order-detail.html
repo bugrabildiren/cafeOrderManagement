@@ -1,0 +1,104 @@
+<div class="page" *ngIf="order">
+    <header class="page-header">
+        <div>
+            <p class="eyebrow">Sipariş Detayı</p>
+            <h1>Sipariş #{{ order.orderId }}</h1>
+            <p class="page-description">
+                Masa bilgilerini, sipariş kalemlerini ve durum güncellemelerini bu ekrandan yönetebilirsiniz.
+            </p>
+        </div>
+
+        <span
+            class="status-badge"
+            [class.status-pending]="order.status === 'Pending'"
+            [class.status-preparing]="order.status === 'Preparing'"
+            [class.status-served]="order.status === 'Served'"
+            [class.status-paid]="order.status === 'Paid'"
+            [class.status-cancelled]="order.status === 'Cancelled'">
+            {{ order.status }}
+        </span>
+    </header>
+
+    <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
+
+    <section class="section">
+        <h2>Sipariş Bilgisi</h2>
+        <p class="section-description">Siparişin genel özeti ve masa bilgileri.</p>
+
+        <div class="card summary-card">
+            <div class="summary-item">
+                <span class="summary-label">Masa</span>
+                <strong>Masa {{ order.tableNumber }}</strong>
+            </div>
+
+            <div class="summary-item">
+                <span class="summary-label">Durum</span>
+                <strong>{{ order.status }}</strong>
+            </div>
+
+            <div class="summary-item">
+                <span class="summary-label">Toplam</span>
+                <strong>{{ order.totalAmount | number:'1.2-2' }}</strong>
+            </div>
+
+            <div class="summary-item" *ngIf="order.notes">
+                <span class="summary-label">Not</span>
+                <strong>{{ order.notes }}</strong>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <h2>Sipariş Kalemleri</h2>
+        <p class="section-description">Siparişte bulunan ürünler ve satır toplamları.</p>
+
+        <div class="grid" *ngIf="order.items.length > 0; else noItems">
+            <div class="card detail-card" *ngFor="let item of order.items">
+                <div class="card-header">
+                    <h3>{{ item.productName }}</h3>
+                    <span class="chip">Kalem #{{ item.orderItemId }}</span>
+                </div>
+
+                <p><strong>Adet:</strong> {{ item.quantity }}</p>
+                <p><strong>Birim Fiyat:</strong> {{ item.unitPrice | number:'1.2-2' }}</p>
+                <p><strong>Tutar:</strong> {{ item.lineTotal | number:'1.2-2' }}</p>
+            </div>
+        </div>
+
+        <ng-template #noItems>
+            <div class="empty-state">
+                Henüz ürün eklenmemiş.
+            </div>
+        </ng-template>
+    </section>
+
+    <section class="section">
+        <h2>Ürün Ekle</h2>
+        <p class="section-description">Eklenebilir ürünler aşağıda listelenir.</p>
+
+        <p *ngIf="isLoadingProducts">Ürünler yükleniyor...</p>
+
+        <div class="grid" *ngIf="products.length > 0">
+            <div class="card detail-card" *ngFor="let product of products">
+                <div class="card-header">
+                    <h3>{{ product.productName }}</h3>
+                    <span class="chip">{{ product.category }}</span>
+                </div>
+
+                <p><strong>Fiyat:</strong> {{ product.price | number:'1.2-2' }}</p>
+                <button type="button" class="primary-button" (click)="addProduct(product.productId)">Ekle</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <h2>Durum Güncelle</h2>
+        <p class="section-description">Siparişin mevcut durumunu bir sonraki adıma taşıyın.</p>
+
+        <div class="button-row">
+            <button type="button" class="secondary-button" *ngFor="let status of statuses" (click)="setStatus(status.statusId)">
+                {{ status.statusName }}
+            </button>
+        </div>
+    </section>
+</div>

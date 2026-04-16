@@ -1,0 +1,250 @@
+<div class="page">
+    <header class="page-header">
+        <div>
+            <p class="eyebrow">Ana Sayfa</p>
+            <h1>Cafe Order Management</h1>
+            <p class="page-description">
+                Masaları hızlıca görüntüleyin, aktif siparişleri yönetin, boş masalar için sipariş oluşturun ve tamamlanan siparişleri takip edin.
+            </p>
+        </div>
+        <div class="summary-badges">
+            <span class="badge badge-info">Aktif Siparişli: {{ tablesWithActiveOrders.length }}</span>
+            <span class="badge badge-success">Boş Masa: {{ emptyTables.length }}</span>
+        </div>
+    </header>
+
+    <p *ngIf="errorMessage" class="error">
+        {{ errorMessage }}
+    </p>
+
+    <section class="section">
+        <h2>Aktif Siparişli Masalar</h2>
+        <p class="section-description">Bu masalarda açık sipariş bulunur. Doğrudan sipariş detayına gidebilirsiniz.</p>
+
+        <p *ngIf="isLoadingTables || isLoadingOrders">Masalar yükleniyor...</p>
+
+        <div class="grid" *ngIf="!isLoadingTables && !isLoadingOrders && tablesWithActiveOrders.length > 0">
+            <div
+                class="card table-card"
+                *ngFor="let table of tablesWithActiveOrders"
+                [class.selected]="selectedTable?.tableId === table.tableId">
+                <div class="table-card-header">
+                    <div>
+                        <h3>Masa {{ table.tableNumber }}</h3>
+                        <p class="table-meta">Kapasite: {{ table.capacity }} kişi</p>
+                    </div>
+                    <span class="badge badge-info">Aktif Sipariş</span>
+                </div>
+
+                <p class="table-state" *ngIf="getActiveOrderForTable(table) as activeOrder">
+                    Sipariş #{{ activeOrder.orderId }} | Durum: {{ activeOrder.status }}
+                </p>
+
+                <div class="status-actions" *ngIf="getActiveOrderForTable(table) as activeOrder">
+                    <button
+                        type="button"
+                        class="status-button"
+                        *ngFor="let status of getAvailableStatusTargets(activeOrder)"
+                        (click)="updateOrderStatusFromDashboard(activeOrder, status.statusName)">
+                        {{ status.statusName }}
+                    </button>
+                </div>
+
+                <div class="card-actions">
+                    <button type="button" class="ghost-button" (click)="selectTable(table)">Detayı Gör</button>
+                    <button type="button" class="primary-button" (click)="goToOrder(getActiveOrderForTable(table)!.orderId)">
+                        Siparişi Aç
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <p class="empty-state" *ngIf="!isLoadingTables && !isLoadingOrders && tablesWithActiveOrders.length === 0">
+            Aktif siparişli masa bulunmuyor.
+        </p>
+    </section>
+
+    <section class="section">
+        <h2>Sipariş Alınabilecek Boş Masalar</h2>
+        <p class="section-description">Açık siparişi olmayan masalardan yeni sipariş oluşturabilir ve ürün seçebilirsiniz.</p>
+
+        <div class="grid" *ngIf="!isLoadingTables && !isLoadingOrders && emptyTables.length > 0">
+            <div
+                class="card table-card"
+                *ngFor="let table of emptyTables"
+                [class.selected]="selectedTable?.tableId === table.tableId">
+                <div class="table-card-header">
+                    <div>
+                        <h3>Masa {{ table.tableNumber }}</h3>
+                        <p class="table-meta">Kapasite: {{ table.capacity }} kişi</p>
+                    </div>
+                    <span class="badge" [class.badge-success]="table.isActive" [class.badge-muted]="!table.isActive">
+                        {{ table.isActive ? 'Boş Masa' : 'Pasif Masa' }}
+                    </span>
+                </div>
+
+                <p class="table-state">
+                    {{ table.isActive ? 'Yeni sipariş almaya hazır.' : 'Yeni sipariş için uygun değil.' }}
+                </p>
+
+                <div class="card-actions">
+                    <button type="button" class="ghost-button" (click)="selectTable(table)">Detayı Gör</button>
+                    <button
+                        type="button"
+                        class="primary-button"
+                        (click)="openTable(table.tableId)"
+                        [disabled]="!table.isActive">
+                        Sipariş Oluştur
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <p class="empty-state" *ngIf="!isLoadingTables && !isLoadingOrders && emptyTables.length === 0">
+            Sipariş alınabilecek boş masa bulunmuyor.
+        </p>
+    </section>
+
+    <section class="section" *ngIf="selectedTable as table">
+        <h2>Seçilen Masa</h2>
+        <p class="section-description">Seçilen masa için mevcut durumu, sipariş içeriğini ve bir sonraki işlemi görüntüleyin.</p>
+
+        <div class="card detail-panel">
+            <div class="table-card-header">
+                <div>
+                    <p class="detail-label">Seçilen Masa</p>
+                    <h3>Masa {{ table.tableNumber }}</h3>
+                </div>
+                <span class="badge" [class.badge-info]="getActiveOrderForTable(table)" [class.badge-success]="!getActiveOrderForTable(table) && table.isActive" [class.badge-muted]="!table.isActive">
+                    {{ getActiveOrderForTable(table) ? 'Aktif Sipariş Var' : (table.isActive ? 'Siparişe Uygun' : 'Pasif') }}
+                </span>
+            </div>
+
+            <div class="detail-grid">
+                <p><strong>Kapasite:</strong> {{ table.capacity }} kişi</p>
+                <p><strong>Masa Durumu:</strong> {{ table.isActive ? 'Aktif' : 'Pasif' }}</p>
+                <p *ngIf="getActiveOrderForTable(table) as activeOrder"><strong>Açık Sipariş:</strong> #{{ activeOrder.orderId }}</p>
+                <p *ngIf="!getActiveOrderForTable(table)"><strong>Açık Sipariş:</strong> Yok</p>
+            </div>
+
+            <div *ngIf="!getActiveOrderForTable(table)" class="order-builder">
+                <h3>Sipariş Hazırlama</h3>
+                <p class="section-description">Ürünleri seçin, adetleri düzenleyin ve siparişi onaylayın.</p>
+
+                <p *ngIf="isLoadingProducts">Ürünler yükleniyor...</p>
+
+                <div class="builder-grid" *ngIf="!isLoadingProducts">
+                    <div class="builder-column">
+                        <h4>Ürünler</h4>
+                        <div class="builder-list">
+                            <div class="builder-item" *ngFor="let product of products">
+                                <div>
+                                    <strong>{{ product.productName }}</strong>
+                                    <p>{{ product.category }} | {{ product.price | number:'1.2-2' }}</p>
+                                </div>
+                                <button type="button" class="ghost-button" (click)="addProductToCart(product)" [disabled]="!table.isActive">
+                                    Ekle
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="builder-column">
+                        <h4>Hazırlanan Sipariş</h4>
+                        <div class="builder-list" *ngIf="cartItems.length > 0; else emptyCart">
+                            <div class="builder-item" *ngFor="let item of cartItems">
+                                <div>
+                                    <strong>{{ item.productName }}</strong>
+                                    <p>{{ item.category }} | {{ item.price | number:'1.2-2' }}</p>
+                                </div>
+                                <div class="quantity-controls">
+                                    <button type="button" class="quantity-button" (click)="decreaseCartItem(item.productId)">-</button>
+                                    <span>{{ item.quantity }}</span>
+                                    <button type="button" class="quantity-button" (click)="increaseCartItem(item.productId)">+</button>
+                                    <button type="button" class="remove-button" (click)="removeCartItem(item.productId)">Sil</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <ng-template #emptyCart>
+                            <p class="empty-state compact">Henüz ürün seçilmedi.</p>
+                        </ng-template>
+
+                        <p class="cart-total"><strong>Toplam:</strong> {{ cartTotalAmount | number:'1.2-2' }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <button
+                type="button"
+                class="primary-button"
+                (click)="handleSelectedTableAction()"
+                [disabled]="(!table.isActive && !getActiveOrderForTable(table)) || isSavingOrder || (!getActiveOrderForTable(table) && cartItems.length === 0)">
+                {{
+                    getActiveOrderForTable(table)
+                        ? 'Siparişi Aç'
+                        : (isSavingOrder ? 'Kaydediliyor...' : 'Siparişi Onayla ve Oluştur')
+                }}
+            </button>
+
+            <p class="helper-text" *ngIf="getActiveOrderForTable(table)">
+                Bu masa için mevcut sipariş detayına yönlendirilirsiniz.
+            </p>
+            <p class="helper-text" *ngIf="!getActiveOrderForTable(table) && table.isActive">
+                Ürünleri seçtikten sonra siparişi onaylayarak yeni sipariş oluşturabilirsiniz.
+            </p>
+            <p class="helper-text" *ngIf="!table.isActive && !getActiveOrderForTable(table)">
+                Pasif masalar için yeni sipariş oluşturulamaz.
+            </p>
+        </div>
+    </section>
+
+    <section class="section">
+        <h2>Duruma Göre Siparişler</h2>
+        <p class="section-description">Servis edilen ve iptal edilen siparişleri ana sayfadan takip edin.</p>
+
+        <div class="status-group">
+            <div>
+                <div class="status-group-header">
+                    <h3>Servis Edildi</h3>
+                    <span class="badge badge-info">{{ servedOrders.length }}</span>
+                </div>
+
+                <div class="grid" *ngIf="servedOrders.length > 0; else noServedOrders">
+                    <div class="card order-card" *ngFor="let order of servedOrders">
+                        <h4>Sipariş #{{ order.orderId }}</h4>
+                        <p>Masa: {{ order.tableNumber }}</p>
+                        <p>Durum: {{ order.status }}</p>
+                        <p>Oluşturulma: {{ order.orderCreatedAt | date:'short' }}</p>
+                        <button type="button" class="ghost-button" (click)="goToOrder(order.orderId)">Detayı Aç</button>
+                    </div>
+                </div>
+
+                <ng-template #noServedOrders>
+                    <p class="empty-state compact">Servis edilen sipariş bulunmuyor.</p>
+                </ng-template>
+            </div>
+
+            <div>
+                <div class="status-group-header">
+                    <h3>İptal Edildi</h3>
+                    <span class="badge badge-muted">{{ cancelledOrders.length }}</span>
+                </div>
+
+                <div class="grid" *ngIf="cancelledOrders.length > 0; else noCancelledOrders">
+                    <div class="card order-card" *ngFor="let order of cancelledOrders">
+                        <h4>Sipariş #{{ order.orderId }}</h4>
+                        <p>Masa: {{ order.tableNumber }}</p>
+                        <p>Durum: {{ order.status }}</p>
+                        <p>Oluşturulma: {{ order.orderCreatedAt | date:'short' }}</p>
+                        <button type="button" class="ghost-button" (click)="goToOrder(order.orderId)">Detayı Aç</button>
+                    </div>
+                </div>
+
+                <ng-template #noCancelledOrders>
+                    <p class="empty-state compact">İptal edilen sipariş bulunmuyor.</p>
+                </ng-template>
+            </div>
+        </div>
+    </section>
+</div>
