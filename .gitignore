@@ -1,0 +1,36 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# Node / Angular
+node_modules/
+dist/
+.angular/
+coverage/
+
+# .NET
+bin/
+obj/
+.vs/
+*.user
+*.suo
+
+# Docker
+docker-data/
+
+# IDE
+.idea/
+.vscode/
+
+# Build artifacts
+out/
+publish/
