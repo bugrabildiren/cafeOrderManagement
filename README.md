@@ -1,2 +1,1 @@
-# cafeOrderManagement
-Cloud Native Cafe Order Management
+# Cafe Order Management
