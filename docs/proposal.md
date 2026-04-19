@@ -1,4 +1,4 @@
-#Project Proposal
+# Project Proposal
 
 ## Desing and Implementation of a 12-Factor Cloud-Native Cafe Order Management System
 
