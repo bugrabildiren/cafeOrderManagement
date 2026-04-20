@@ -1,7 +1,7 @@
-version: '3.9'
+version: "3.9"
 
-services: 
-  db: 
+services:
+  db:
     image: postgres:16
     container_name: cafe_db
     environment:
@@ -13,26 +13,26 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-    backend:
-      build:
-        context: ./backend/cafeOrderManagement.Api
-      container_name: cafe_backend
-      environment:
-        ASPNETCORE_ENVIRONMENT: Development
-        ASPNETCORE_URLS: http://+:8000
-        ConnectionString_DefaultConnection: Host=db;Port=5432;Database=cafe;Username=postgres;Password=postgres
-      ports:
-        - "8080:8080"
-      depends_on:
-        - db
+  backend:
+    build:
+      context: ./backend/cafeOrderManagement.Api
+    container_name: cafe_backend
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8000
+      ConnectionString_DefaultConnection: Host=db;Port=5432;Database=cafe;Username=postgres;Password=postgres
+    ports:
+      - "8080:8000"
+    depends_on:
+      - db
 
-      frontend:
-        build:
-          context: ./frontend/cafe-order-management-ui
-        container_name: cafe_frontend
-        ports:
-          - "4200:80"
-        depends_on:
-          - backend
-    volumes:
-      postgres_data:
+  frontend:
+    build:
+      context: ./frontend/cafe-order-management-ui
+    container_name: cafe_frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+volumes:
+  postgres_data:
