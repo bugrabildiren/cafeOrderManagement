@@ -14,7 +14,7 @@ services:
 
   backend:
     build:
-      context: ./backend/cafeOrderManagement.Api
+      context: ./backend/CafeOrderManagement.Api
     container_name: cafe_backend
     environment:
       ASPNETCORE_ENVIRONMENT: Development
