@@ -11,3 +11,4 @@ RUN rm -rf /usr/share/nginx/html/*
 COPY --from=build /app/dist/cafe-order-management-ui/browser /usr/share/nginx/html/
 RUN cp /usr/share/nginx/html/index.csr.html /usr/share/nginx/html/index.html
 EXPOSE 80
+COPY nginx.conf /etc/nginx/conf.d/default.conf
