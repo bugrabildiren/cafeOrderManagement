@@ -122,6 +122,21 @@ This project follows the 12-Factor App approach in the following ways:
 
 ---
 
+## Deployment Status
+
+The application was successfully deployed on AWS EC2 using Docker Compose.
+
+The deployed system includes:
+- frontend container
+- backend container
+- PostgreSQL container
+
+The frontend is served through Nginx, and API requests are routed through reverse proxy configuration.  
+The database is initialized automatically through PostgreSQL startup scripts.
+
+This confirms that the project is not only cloud-ready in design, but also successfully deployed and tested in a real AWS environment.
+
+---
 ## Current Status
 At the current stage, the project:
 - runs successfully with Docker
