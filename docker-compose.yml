@@ -19,7 +19,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8000
-      ConnectionString_DefaultConnection: Host=db;Port=5432;Database=cafe;Username=postgres;Password=postgres
+      ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=cafe;Username=postgres;Password=postgres
     ports:
       - "8080:8000"
     depends_on:
